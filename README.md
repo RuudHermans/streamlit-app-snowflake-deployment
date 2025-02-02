@@ -76,9 +76,9 @@ This repository contains a simple Streamlit application deployed on **Snowflake*
    - In VS Code, press `F1` → **Remote-Containers: Reopen in Container**.
    - This will build the container defined in `.devcontainer/Dockerfile`.
 
-4. **Run the App:**
+4. **Run the App with Mock Data:**
    ```bash
-   streamlit run app/app.py
+   ./run_mock.sh
    ```
 
 ### **Option 2: Running Locally Without Containers**
@@ -95,39 +95,70 @@ This repository contains a simple Streamlit application deployed on **Snowflake*
    pip install -r requirements.txt
    ```
 
-3. **Run the Streamlit App Locally:**
+3. **Run the Streamlit App Locally with Mock Data:**
    ```bash
-   streamlit run app.py
+   ./run_mock.sh
    ```
 
 ### **Mocking Snowflake Data for Local Development**
-If you want to test the app with data that would normally be stored in Snowflake:
 
-1. **Create Mock Data:**
-   - Add a mock data file named `orders.csv` in the `mock_data/` folder with the following columns:
-     ```csv
-     order_number,order_name
-     001,Order Alpha
-     002,Order Beta
-     003,Order Gamma
-     ...
-     015,Order Omicron
+When developing new features locally, it's often necessary to mock Snowflake data, especially when adding new tables. This section guides you on how to create mock data that mirrors Snowflake tables for seamless local development.
+
+1. **Adding New Tables to Snowflake:**
+   - First, define your new table in Snowflake. For example:
+     ```sql
+     CREATE OR REPLACE TABLE dev_database.dev_schema.customers (
+         customer_id STRING,
+         customer_name STRING,
+         email STRING
+     );
      ```
 
-2. **Run with Mock Data (Single Command):**
-   - Simply run the following command:
+2. **Create Corresponding Mock Data:**
+   - In the `mock_data/` folder, create a new CSV file matching the table structure. For the `customers` table:
+     ```csv
+     customer_id,customer_name,email
+     C001,John Doe,john@example.com
+     C002,Jane Smith,jane@example.com
+     C003,Bob Johnson,bob@example.com
+     ```
+
+3. **Organize Mock Data:**
+   - Place the mock data file inside the `mock_data/` directory. Example structure:
+     ```
+     mock_data/
+     ├── orders.csv
+     └── customers.csv
+     ```
+
+4. **Update the App to Load Mock Data:**
+   - In `app.py`, modify the code to load the new mock data when `USE_MOCK_DATA=true`:
+     ```python
+     if USE_MOCK_DATA:
+         orders_data = pd.read_csv("mock_data/orders.csv")
+         customers_data = pd.read_csv("mock_data/customers.csv")
+     else:
+         session = st.connection("snowflake").session()
+         orders_data = session.table("orders").to_pandas()
+         customers_data = session.table("customers").to_pandas()
+     ```
+
+5. **Run the App with Mock Data (Single Command):**
+   - Simply run:
      ```bash
      ./run_mock.sh
      ```
-   - This script sets the required environment variable and starts the app.
+   - This script sets the environment variable `USE_MOCK_DATA=true` and starts the app.
 
-3. **Data Handling in Code:**
-   - Implemented in `app.py` to automatically detect mock mode and load `orders.csv`.
+### **Best Practices for Mock Data:**
+- **Consistency:** Ensure mock data columns match exactly with the Snowflake table schema.
+- **Sample Variety:** Include diverse sample data to cover edge cases.
+- **Sensitive Data:** Never use real customer or sensitive data in mock files.
 
-### **Do We Need Anything Else?**
-- ✅ **All dependencies** are listed in `requirements.txt`.
-- ✅ Mock data allows testing without a live Snowflake connection.
-- ✅ Dev Container provides a consistent development environment.
+### ✅ **Do We Need Anything Else?**
+- ✅ Add new mock CSV files as needed.
+- ✅ Keep mock data updated as Snowflake schemas evolve.
+- ✅ Test thoroughly with both mock data locally and real data post-deployment.
 
 ---
 
@@ -145,12 +176,14 @@ If you want to test the app with data that would normally be stored in Snowflake
      ./run_mock.sh
      ```
 
-3. **Verify with Real Snowflake Data:**
-   - Disable mock mode to connect to Snowflake:
+3. **Verify with Real Snowflake Data (via Deployment):**
+   - **Push your branch to GitHub:**
      ```bash
-     unset USE_MOCK_DATA
-     streamlit run app.py
+     git push origin feature/new-awesome-feature
      ```
+   - **Create a Pull Request (PR)** to merge the feature branch into `main`.
+   - Once merged, the GitHub Actions workflow will automatically deploy the app to the **development** environment.
+   - **Access the deployed app** through the Snowflake-hosted URL provided by the workflow.
 
 4. **Commit Changes:**
    ```bash
@@ -199,7 +232,7 @@ When updating the Streamlit version, follow these steps to ensure compatibility:
      ```
    - Run the app to verify functionality:
      ```bash
-     streamlit run app.py
+     ./run_mock.sh
      ```
 
 3. **Update `snowflake_app.yml`:**
