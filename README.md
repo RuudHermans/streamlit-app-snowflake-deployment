@@ -58,22 +58,47 @@ This repository contains a simple Streamlit application deployed on **Snowflake*
 
 ## 🛠️ 2. Local Development Setup
 
-### **Step 1: Clone the Repository**
-```bash
-git clone https://github.com/your-username/your-repo.git
-cd your-repo/app
-```
+### **Option 1: Using VS Code Dev Containers** *(Recommended)*
 
-### **Step 2: Install Dependencies**
-Ensure you have Python 3.9+ installed.
-```bash
-pip install -r requirements.txt
-```
+1. **Install Prerequisites:**
+   - [Docker](https://www.docker.com/products/docker-desktop)
+   - [Visual Studio Code](https://code.visualstudio.com/)
+   - [Remote - Containers Extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers)
 
-### **Step 3: Run the Streamlit App Locally**
-```bash
-streamlit run app.py
-```
+2. **Open the Project in VS Code:**
+   ```bash
+   git clone https://github.com/your-username/your-repo.git
+   cd your-repo
+   code .
+   ```
+
+3. **Reopen in Container:**
+   - In VS Code, press `F1` → **Remote-Containers: Reopen in Container**.
+   - This will build the container defined in `.devcontainer/Dockerfile`.
+
+4. **Run the App:**
+   ```bash
+   streamlit run app/app.py
+   ```
+
+### **Option 2: Running Locally Without Containers**
+
+1. **Clone the Repository:**
+   ```bash
+   git clone https://github.com/your-username/your-repo.git
+   cd your-repo/app
+   ```
+
+2. **Install Dependencies:**
+   Ensure you have Python 3.9+ installed.
+   ```bash
+   pip install -r requirements.txt
+   ```
+
+3. **Run the Streamlit App Locally:**
+   ```bash
+   streamlit run app.py
+   ```
 
 ### **Mocking Snowflake Data for Local Development**
 If you want to test the app with data that would normally be stored in Snowflake:
@@ -89,12 +114,12 @@ If you want to test the app with data that would normally be stored in Snowflake
      015,Order Omicron
      ```
 
-2. **Switch to Mock Mode:**
-   - Use an environment variable to toggle between Snowflake and mock data:
+2. **Run with Mock Data (Single Command):**
+   - Simply run the following command:
      ```bash
-     export USE_MOCK_DATA=true
-     streamlit run app.py
+     ./run_mock.sh
      ```
+   - This script sets the required environment variable and starts the app.
 
 3. **Data Handling in Code:**
    - Implemented in `app.py` to automatically detect mock mode and load `orders.csv`.
@@ -102,6 +127,7 @@ If you want to test the app with data that would normally be stored in Snowflake
 ### **Do We Need Anything Else?**
 - ✅ **All dependencies** are listed in `requirements.txt`.
 - ✅ Mock data allows testing without a live Snowflake connection.
+- ✅ Dev Container provides a consistent development environment.
 
 ---
 
@@ -116,8 +142,7 @@ If you want to test the app with data that would normally be stored in Snowflake
    - Modify files as needed.
    - Test the app locally using mock data:
      ```bash
-     export USE_MOCK_DATA=true
-     streamlit run app.py
+     ./run_mock.sh
      ```
 
 3. **Verify with Real Snowflake Data:**
