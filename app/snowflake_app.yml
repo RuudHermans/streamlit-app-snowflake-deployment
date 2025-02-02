@@ -1,0 +1,3 @@
+app_name: streamlit_snowflake_app
+environment:
+  streamlit_version: "1.24.0"
