@@ -1,0 +1,58 @@
+name: Deploy Streamlit App to Snowflake
+
+on:
+  push:
+    branches:
+      - main
+    types:
+      - merged
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        environment: [development, acceptance, production]
+    environment:
+      name: ${{ matrix.environment }}
+      url: ${{ env.APP_URL }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.9'
+
+      - name: Install Snowflake CLI
+        run: |
+          pip install snowflake-cli pyyaml
+
+      - name: Read App Name from snowflake_app.yml
+        id: app_name
+        run: |
+          APP_NAME=$(python -c "import yaml; print(yaml.safe_load(open('app/snowflake_app.yml'))['app_name'])")
+          echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
+
+      - name: Build Snowflake App URL
+        id: build_url
+        run: |
+          ENV_PREFIX=${{ matrix.environment }}
+          APP_URL="https://${{ secrets.SNOWFLAKE_ACCOUNT }}.snowflakecomputing.com/${{ secrets.SNOWFLAKE_DATABASE }}/${{ secrets.SNOWFLAKE_SCHEMA }}/${ENV_PREFIX}_${APP_NAME}"
+          echo "APP_URL=$APP_URL" >> $GITHUB_ENV
+
+      - name: Deploy to ${{ matrix.environment }}
+        env:
+          SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+          SNOWFLAKE_USER: ${{ secrets[format('SNOWFLAKE_USER_{0}', matrix.environment | upper)] }}
+          SNOWFLAKE_PASSWORD: ${{ secrets[format('SNOWFLAKE_PASSWORD_{0}', matrix.environment | upper)] }}
+          SNOWFLAKE_ROLE: ${{ secrets.SNOWFLAKE_ROLE }}
+          SNOWFLAKE_DATABASE: ${{ secrets.SNOWFLAKE_DATABASE }}
+          SNOWFLAKE_SCHEMA: ${{ secrets.SNOWFLAKE_SCHEMA }}
+        run: |
+          snowsql -a $SNOWFLAKE_ACCOUNT -u $SNOWFLAKE_USER -p $SNOWFLAKE_PASSWORD -r $SNOWFLAKE_ROLE -d $SNOWFLAKE_DATABASE -s $SNOWFLAKE_SCHEMA -q "CREATE OR REPLACE STREAMLIT APP ${matrix.environment}_${APP_NAME} FROM @app/app.py;"
+
+      - name: Output Deployment URL
+        run: |
+          echo "Deployment URL: $APP_URL"
