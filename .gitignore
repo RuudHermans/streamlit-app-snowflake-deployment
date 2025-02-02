@@ -1,0 +1,31 @@
+# Python-related
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Virtual Environments
+.venv/
+venv/
+ENV/
+
+# Snowflake CLI Configs
+.snowflake/
+
+# VS Code Settings
+.vscode/
+
+# Streamlit Cache
+.streamlit/
+
+# Docker-related
+*.log
+docker-compose.override.yml
+
+# Environment Variables
+.env
+.env.*
+
+# OS-specific
+.DS_Store
+Thumbs.db
