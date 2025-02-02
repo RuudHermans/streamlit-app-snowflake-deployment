@@ -1,4 +1,26 @@
 import streamlit as st
+import pandas as pd
+import os
+from snowflake.snowpark.functions import col
 
-st.title("Snowflake Streamlit Deployment")
-st.write("This app is deployed through GitHub Actions with Development, Acceptance, and Production stages.")
+# Check if we're using mock data
+USE_MOCK_DATA = os.getenv("USE_MOCK_DATA", "false").lower() == "true"
+
+# Load data
+if USE_MOCK_DATA:
+    # Load mock data from CSV
+    data = pd.read_csv("mock_data/orders.csv")
+else:
+    # Use Streamlit's Snowflake connection
+    cnx = st.connection("snowflake")
+    session = cnx.session()
+
+    # Fetch data from the orders table
+    data = session.table("orders").select(col("order_number"), col("order_name")).to_pandas()
+
+# Streamlit app
+st.title("Orders Dashboard")
+st.write("Here are the latest orders:")
+
+# Display data
+st.dataframe(data)
