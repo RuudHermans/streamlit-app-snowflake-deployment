@@ -4,6 +4,50 @@ This repository contains a simple Streamlit application deployed on **Snowflake*
 
 ---
 
+## 📁 Project Directory Structure
+
+Here's an overview of the project directory structure along with the purpose of each file:
+
+```
+/ (root of your repository)
+├── .github/
+│   └── workflows/
+│       └── deploy.yml           # GitHub Actions Workflow for CI/CD
+├── .devcontainer/
+│   ├── devcontainer.json        # VS Code Dev Container Configuration
+│   └── Dockerfile               # Dockerfile for Dev Container Setup
+├── app/
+│   ├── app.py                   # Main Streamlit Application
+│   ├── requirements.txt         # Python Dependencies
+│   └── snowflake_app.yml        # Snowflake App Configuration
+├── mock_data/
+│   └── orders.csv               # Mock Data for Orders Table
+├── snowflake/
+│   └── setup.sql                # Snowflake Roles & Permissions Setup Script
+├── run_mock.sh                  # Script to Run the App with Mock Data
+├── README.md                    # Project Documentation
+└── .gitignore                   # Specifies Files to Ignore in Git
+```
+
+### **Purpose of Each File/Directory:**
+
+- **`.github/workflows/deploy.yml`** - Automates deployments using GitHub Actions.
+- **`.devcontainer/`** - Contains configuration for consistent development environments using VS Code Dev Containers.
+  - `devcontainer.json` - Defines extensions and settings for the dev container.
+  - `Dockerfile` - Specifies the environment to build the container.
+- **`app/`** - Core application folder.
+  - `app.py` - The main Streamlit app where UI and logic are implemented.
+  - `requirements.txt` - Lists required Python libraries.
+  - `snowflake_app.yml` - Configures the Snowflake deployment settings.
+- **`mock_data/`** - Holds mock data for local development.
+  - `orders.csv` - Sample dataset to simulate Snowflake data.
+- **`snowflake/setup.sql`** - SQL script to create roles, users, and tables in Snowflake.
+- **`run_mock.sh`** - Bash script to start the app with mock data for testing.
+- **`README.md`** - This documentation file explaining project setup, usage, and contributions.
+- **`.gitignore`** - Defines files and directories to be excluded from version control.
+
+---
+
 ## 📦 1. Setup Instructions
 
 ### **🔐 Prerequisites:**
@@ -12,7 +56,7 @@ This repository contains a simple Streamlit application deployed on **Snowflake*
 
 ### **Step 1: Snowflake Setup**
 1. **Run the Snowflake Permission Script:**  
-   Execute `snowflake_permission_setup.sql` in your Snowflake account:
+   Execute `snowflake/setup.sql` in your Snowflake account:
    ```sql
    -- Connect as SECURITYADMIN
    USE ROLE SECURITYADMIN;
@@ -100,114 +144,9 @@ This repository contains a simple Streamlit application deployed on **Snowflake*
    ./run_mock.sh
    ```
 
-### **Mocking Snowflake Data for Local Development**
-
-When developing new features locally, it's often necessary to mock Snowflake data, especially when adding new tables. This section guides you on how to create mock data that mirrors Snowflake tables for seamless local development.
-
-1. **Adding New Tables to Snowflake:**
-   - First, define your new table in Snowflake. For example:
-     ```sql
-     CREATE OR REPLACE TABLE dev_database.dev_schema.customers (
-         customer_id STRING,
-         customer_name STRING,
-         email STRING
-     );
-     ```
-
-2. **Create Corresponding Mock Data:**
-   - In the `mock_data/` folder, create a new CSV file matching the table structure. For the `customers` table:
-     ```csv
-     customer_id,customer_name,email
-     C001,John Doe,john@example.com
-     C002,Jane Smith,jane@example.com
-     C003,Bob Johnson,bob@example.com
-     ```
-
-3. **Organize Mock Data:**
-   - Place the mock data file inside the `mock_data/` directory. Example structure:
-     ```
-     mock_data/
-     ├── orders.csv
-     └── customers.csv
-     ```
-
-4. **Update the App to Load Mock Data:**
-   - In `app.py`, modify the code to load the new mock data when `USE_MOCK_DATA=true`:
-     ```python
-     if USE_MOCK_DATA:
-         orders_data = pd.read_csv("mock_data/orders.csv")
-         customers_data = pd.read_csv("mock_data/customers.csv")
-     else:
-         session = st.connection("snowflake").session()
-         orders_data = session.table("orders").to_pandas()
-         customers_data = session.table("customers").to_pandas()
-     ```
-
-5. **Run the App with Mock Data (Single Command):**
-   - Simply run:
-     ```bash
-     ./run_mock.sh
-     ```
-   - This script sets the environment variable `USE_MOCK_DATA=true` and starts the app.
-
-### **Best Practices for Mock Data:**
-- **Consistency:** Ensure mock data columns match exactly with the Snowflake table schema.
-- **Sample Variety:** Include diverse sample data to cover edge cases.
-- **Sensitive Data:** Never use real customer or sensitive data in mock files.
-
-### ✅ **Do We Need Anything Else?**
-- ✅ Add new mock CSV files as needed.
-- ✅ Keep mock data updated as Snowflake schemas evolve.
-- ✅ Test thoroughly with both mock data locally and real data post-deployment.
-
 ---
 
-## 🌱 3. Adding New Features with Feature Branches
-
-1. **Create a New Feature Branch:**
-   ```bash
-   git checkout -b feature/new-awesome-feature
-   ```
-
-2. **Develop Your Feature:**
-   - Modify files as needed.
-   - Test the app locally using mock data:
-     ```bash
-     ./run_mock.sh
-     ```
-
-3. **Verify with Real Snowflake Data (via Deployment):**
-   - **Push your branch to GitHub:**
-     ```bash
-     git push origin feature/new-awesome-feature
-     ```
-   - **Create a Pull Request (PR)** to merge the feature branch into `main`.
-   - Once merged, the GitHub Actions workflow will automatically deploy the app to the **development** environment.
-   - **Access the deployed app** through the Snowflake-hosted URL provided by the workflow.
-
-4. **Commit Changes:**
-   ```bash
-   git add .
-   git commit -m "Add new awesome feature"
-   ```
-
-5. **Push to GitHub:**
-   ```bash
-   git push origin feature/new-awesome-feature
-   ```
-
-6. **Create a Pull Request (PR):**
-   - Go to GitHub.
-   - Open a PR to merge `feature/new-awesome-feature` into `main`.
-
-7. **Merge & Deploy:**
-   - After code review, merge the PR.
-   - The GitHub Actions workflow will **automatically deploy** the app to the **development** environment.
-   - **Manual approval** is required to deploy to **acceptance** and **production**.
-
----
-
-## 🚀 **Deployment Flow**
+## 🚀 Deployment Flow
 
 1. **Merge PR into `main`.**
 2. **Auto-deploy to `development`.**
@@ -215,7 +154,7 @@ When developing new features locally, it's often necessary to mock Snowflake dat
 
 ---
 
-## 🔄 **Special Work Instructions: Updating the Streamlit Version**
+## 🔄 Special Work Instructions: Updating the Streamlit Version
 
 When updating the Streamlit version, follow these steps to ensure compatibility:
 
@@ -257,7 +196,7 @@ When updating the Streamlit version, follow these steps to ensure compatibility:
 
 ---
 
-## 💬 **Need Help?**
+## 💬 Need Help?
 For issues, create a [GitHub Issue](https://github.com/your-username/your-repo/issues).
 
 Happy coding! 🚀
