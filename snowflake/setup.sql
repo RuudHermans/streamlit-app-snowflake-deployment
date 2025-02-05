@@ -9,9 +9,9 @@ CREATE OR REPLACE ROLE acc_read_role;
 CREATE OR REPLACE ROLE prod_read_role;
 
 -- Create Service Users for Each Environment
-CREATE OR REPLACE USER deploy_dev_user PASSWORD = 'CHANGE_THIS_TO_SOMETHING_SAFE' DEFAULT_ROLE = dev_read_role TYPE = 'LEGACY_SERVICE' MUST_CHANGE_PASSWORD = FALSE;
-CREATE OR REPLACE USER deploy_acc_user PASSWORD = 'CHANGE_THIS_TO_SOMETHING_SAFE' DEFAULT_ROLE = acc_read_role TYPE = 'LEGACY_SERVICE' MUST_CHANGE_PASSWORD = FALSE;
-CREATE OR REPLACE USER deploy_prod_user PASSWORD = 'CHANGE_THIS_TO_SOMETHING_SAFE' DEFAULT_ROLE = prod_read_role TYPE = 'LEGACY_SERVICE' MUST_CHANGE_PASSWORD = FALSE;
+CREATE OR REPLACE USER deploy_dev_user PASSWORD = 'StrongPassword1!' DEFAULT_ROLE = dev_read_role TYPE = 'LEGACY_SERVICE' MUST_CHANGE_PASSWORD = FALSE;
+CREATE OR REPLACE USER deploy_acc_user PASSWORD = 'StrongPassword2!' DEFAULT_ROLE = acc_read_role TYPE = 'LEGACY_SERVICE' MUST_CHANGE_PASSWORD = FALSE;
+CREATE OR REPLACE USER deploy_prod_user PASSWORD = 'StrongPassword3!' DEFAULT_ROLE = prod_read_role TYPE = 'LEGACY_SERVICE' MUST_CHANGE_PASSWORD = FALSE;
 
 -- Assign Roles to Service Users
 GRANT ROLE dev_read_role TO USER deploy_dev_user;
@@ -61,6 +61,21 @@ CREATE OR REPLACE SCHEMA acc_database.acc_schema;
 CREATE OR REPLACE DATABASE prod_database;
 CREATE OR REPLACE SCHEMA prod_database.prod_schema;
 
+-- Development Environment stage
+CREATE OR REPLACE STAGE dev_database.dev_schema.streamlit_stage;
+GRANT READ ON STAGE dev_database.dev_schema.streamlit_stage TO ROLE dev_read_role;
+GRANT WRITE ON STAGE dev_database.dev_schema.streamlit_stage TO ROLE dev_read_role;
+
+-- Acceptance Environment stage
+CREATE OR REPLACE STAGE acc_database.acc_schema.streamlit_stage;
+GRANT READ ON STAGE acc_database.acc_schema.streamlit_stage TO ROLE acc_read_role;
+GRANT WRITE ON STAGE acc_database.acc_schema.streamlit_stage TO ROLE acc_read_role;
+
+-- Production Environment stage
+CREATE OR REPLACE STAGE prod_database.prod_schema.streamlit_stage;
+GRANT READ ON STAGE prod_database.prod_schema.streamlit_stage TO ROLE prod_read_role;
+GRANT WRITE ON STAGE prod_database.prod_schema.streamlit_stage TO ROLE prod_read_role;
+
 -- Create the 'orders' Table for Each Environment
 CREATE OR REPLACE TABLE dev_database.dev_schema.orders (
     order_number STRING,
@@ -75,6 +90,12 @@ CREATE OR REPLACE TABLE acc_database.acc_schema.orders (
 CREATE OR REPLACE TABLE prod_database.prod_schema.orders (
     order_number STRING,
     order_name STRING
+);
+
+CREATE OR REPLACE TABLE prod_database.prod_schema.customers (
+    customer_id STRING,
+    customer_name STRING,
+    email STRING
 );
 
 -- Insert Sample Data into the 'orders' Table for All Environments
