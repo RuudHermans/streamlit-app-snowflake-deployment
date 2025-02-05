@@ -26,18 +26,25 @@ jobs:
       - name: Install SnowSQL
         run: |
           sudo apt-get update
-          sudo apt-get install -y curl unzip
+          sudo apt-get install -y curl
       
-          # Download and install SnowSQL
-          curl -O https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.2/linux_x86_64/snowsql-linux_x86_64.zip
-          unzip snowsql-linux_x86_64.zip
-          sudo ./snowsql-linux_x86_64/install
+          # Download the SnowSQL installer script
+          curl -O https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.2/linux_x86_64/snowsql-linux_x86_64.bash
       
-          # Add SnowSQL to PATH
-          export PATH=/usr/bin:$PATH
+          # Verify the installer script is downloaded
+          if [ ! -f snowsql-linux_x86_64.bash ]; then
+            echo "Error: SnowSQL installer script not found."
+            exit 1
+          fi
       
-          # Verify installation
-          snowsql --version
+          # Make the installer script executable
+          chmod +x snowsql-linux_x86_64.bash
+      
+          # Run the installer script
+          ./snowsql-linux_x86_64.bash -y
+      
+          # Verify the installation
+          /usr/bin/snowsql --version
 
       - name: Read App Name from snowflake_app.yml
         id: app_name
