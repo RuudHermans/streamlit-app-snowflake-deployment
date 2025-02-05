@@ -47,13 +47,20 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y gnupg2 curl
-          curl https://sfc-repo.snowflakecomputing.com/keys/snowflake-apt-key.pub | sudo gpg --dearmor -o /usr/share/keyrings/snowflake-archive-keyring.gpg
+      
+          # Add Snowflake's GPG key securely
+          curl -fsSL https://sfc-repo.snowflakecomputing.com/keys/snowflake-apt-key.pub | sudo tee /usr/share/keyrings/snowflake-archive-keyring.gpg > /dev/null
+      
+          # Add Snowflake's APT repository
           echo "deb [signed-by=/usr/share/keyrings/snowflake-archive-keyring.gpg] https://sfc-repo.snowflakecomputing.com/apt/debian/ stable main" | sudo tee /etc/apt/sources.list.d/snowflake.list
+      
+          # Update repositories and install SnowSQL
           sudo apt-get update
           sudo apt-get install -y snowsql
+      
+          # Verify the installation
           snowsql --version
 
-      
       - name: Deploy to ${{ matrix.environment }}
         env:
           SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
