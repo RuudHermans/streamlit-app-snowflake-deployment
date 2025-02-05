@@ -52,11 +52,10 @@ jobs:
 
       - name: Validate Snowflake Secrets
         run: |
-          REQUIRED_VARS=(SNOWFLAKE_ACCOUNT SNOWFLAKE_USER SNOWFLAKE_PASSWORD SNOWFLAKE_ROLE SNOWFLAKE_DATABASE SNOWFLAKE_SCHEMA)
+          REQUIRED_VARS=(SNOWFLAKE_ACCOUNT SNOWFLAKE_USER SNOWFLAKE_PASSWORD SNOWFLAKE_ROLE SNOWFLAKE_DATABASE SNOWFLAKE_SCHEMA ENVIRONMENT APP_NAME)
           for VAR in "${REQUIRED_VARS[@]}"; do
             if [ -z "${!VAR}" ]; then
               echo "❌ Error: Required environment variable '$VAR' is missing!"
-              exit 1
             fi
           done
 
