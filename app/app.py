@@ -13,8 +13,7 @@ if USE_MOCK_DATA:
     data2 = pd.read_csv(os.path.join(os.getcwd(), "mock_data", "customers.csv"))
 else:
     # Use Streamlit's Snowflake connection
-    cnx = st.connection("snowflake")
-    session = cnx.session()
+    session = get_active_session()
 
     # Fetch data from the orders table
     data = session.table("orders").select(col("order_number"), col("order_name")).to_pandas()
