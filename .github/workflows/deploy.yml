@@ -43,8 +43,8 @@ jobs:
       - name: Deploy to ${{ matrix.environment }}
         env:
           SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
-          SNOWFLAKE_USER: ${{ secrets[format('SNOWFLAKE_USER_{0}', matrix.environment | upper)] }}
-          SNOWFLAKE_PASSWORD: ${{ secrets[format('SNOWFLAKE_PASSWORD_{0}', matrix.environment | upper)] }}
+          SNOWFLAKE_USER: ${{ secrets[format('SNOWFLAKE_USER_{0}', toUpper(matrix.environment))] }}
+          SNOWFLAKE_PASSWORD: ${{ secrets[format('SNOWFLAKE_PASSWORD_{0}', toUpper(matrix.environment))] }}
           SNOWFLAKE_ROLE: ${{ secrets.SNOWFLAKE_ROLE }}
           SNOWFLAKE_DATABASE: ${{ secrets.SNOWFLAKE_DATABASE }}
           SNOWFLAKE_SCHEMA: ${{ secrets.SNOWFLAKE_SCHEMA }}
