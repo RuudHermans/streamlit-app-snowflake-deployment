@@ -23,25 +23,33 @@ jobs:
         with:
           python-version: '3.9'
 
-      - name: Install SnowSQL
+      - name: Install SnowSQL (Debug Mode)
         run: |
           sudo apt-get update
           sudo apt-get install -y curl
-
+      
           # Download the official SnowSQL installer
           curl -O https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.3/linux_x86_64/snowsql-1.3.2-linux_x86_64.bash
-
+      
           # Verify the installer was downloaded correctly
           if [ ! -s snowsql-1.3.2-linux_x86_64.bash ]; then
             echo "Error: Failed to download SnowSQL installer."
             exit 1
           fi
-
-          # Install SnowSQL using Bash (per official documentation)
-          bash snowsql-1.3.2-linux_x86_64.bash -y
-
+      
+          # Run the installer in verbose mode and log output
+          bash -x snowsql-1.3.2-linux_x86_64.bash -y > snowsql_install.log 2>&1
+      
+          # Check the installation log for errors
+          if grep -i "error" snowsql_install.log; then
+            echo "❌ Error detected during SnowSQL installation:"
+            cat snowsql_install.log
+            exit 1
+          fi
+      
           # Verify installation
           /usr/bin/snowsql --version
+
 
       - name: Read App Name from snowflake_app.yml
         id: app_name
