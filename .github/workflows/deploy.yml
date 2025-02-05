@@ -33,15 +33,6 @@ jobs:
       - name: Install PyYAML
         run: pip install pyyaml
 
-      - name: TEMP
-        run: ls
-
-      - name: TEMP2
-        run: cd app
-        
-      - name: TEMP3
-        run: ls
-
       - name: Download SnowSQL
         run:  curl -O https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.3/linux_x86_64/snowsql-1.3.2-linux_x86_64.bash
 
@@ -71,11 +62,15 @@ jobs:
         run: |
           ~/snowflake/snowsql -a $SNOWFLAKE_ACCOUNT -u $SNOWFLAKE_USER -r $SNOWFLAKE_ROLE -d $SNOWFLAKE_DATABASE -s $SNOWFLAKE_SCHEMA -q "PUT file://app/app.py @$SNOWFLAKE_DATABASE.$SNOWFLAKE_SCHEMA.streamlit_stage overwrite=true auto_compress=false;"
 
-      - name: Deploy to ${{ matrix.environment }}
+      - name: Upload .yml file to ${{ matrix.environment }} stage
+        run: |
+          ~/snowflake/snowsql -a $SNOWFLAKE_ACCOUNT -u $SNOWFLAKE_USER -r $SNOWFLAKE_ROLE -d $SNOWFLAKE_DATABASE -s $SNOWFLAKE_SCHEMA -q "PUT file://app/environment.yml @$SNOWFLAKE_DATABASE.$SNOWFLAKE_SCHEMA.streamlit_stage overwrite=true auto_compress=false;"
+
+      - name: Create ${{ matrix.environment }} application
         env:
           ENVIRONMENT: ${{ matrix.environment }}
         run: |
-          ~/snowflake/snowsql -a $SNOWFLAKE_ACCOUNT -u $SNOWFLAKE_USER -r $SNOWFLAKE_ROLE -d $SNOWFLAKE_DATABASE -s $SNOWFLAKE_SCHEMA -q "CREATE OR REPLACE STREAMLIT APP ${ENVIRONMENT}_${APP_NAME} FROM @app/app.py;"
+          ~/snowflake/snowsql -a $SNOWFLAKE_ACCOUNT -u $SNOWFLAKE_USER -r $SNOWFLAKE_ROLE -d $SNOWFLAKE_DATABASE -s $SNOWFLAKE_SCHEMA -q "CREATE STREAMLIT ${ENVIRONMENT}_${APP_NAME} ROOT_LOCATION = '@$SNOWFLAKE_DATABASE.$SNOWFLAKE_SCHEMA.streamlit_stage' MAIN_FILE = '/app.py' QUERY_WAREHOUSE = dev_wh;"
 
       - name: Output Deployment URL
         run: |
