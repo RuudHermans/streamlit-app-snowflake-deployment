@@ -40,11 +40,14 @@ jobs:
           APP_URL="https://${{ secrets.SNOWFLAKE_ACCOUNT }}.snowflakecomputing.com/${{ secrets.SNOWFLAKE_DATABASE }}/${{ secrets.SNOWFLAKE_SCHEMA }}/${ENV_PREFIX}_${APP_NAME}"
           echo "APP_URL=$APP_URL" >> $GITHUB_ENV
 
+      - name: Set Environment Name in Uppercase
+        run: echo "ENV_NAME_UPPER=$(echo '${{ matrix.environment }}' | tr '[:lower:]' '[:upper:]')" >> $GITHUB_ENV
+      
       - name: Deploy to ${{ matrix.environment }}
         env:
           SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
-          SNOWFLAKE_USER: ${{ secrets[format('SNOWFLAKE_USER_{0}', toUpper(matrix.environment))] }}
-          SNOWFLAKE_PASSWORD: ${{ secrets[format('SNOWFLAKE_PASSWORD_{0}', toUpper(matrix.environment))] }}
+          SNOWFLAKE_USER: ${{ secrets[format('SNOWFLAKE_USER_{0}', env.ENV_NAME_UPPER)] }}
+          SNOWFLAKE_PASSWORD: ${{ secrets[format('SNOWFLAKE_PASSWORD_{0}', env.ENV_NAME_UPPER)] }}
           SNOWFLAKE_ROLE: ${{ secrets.SNOWFLAKE_ROLE }}
           SNOWFLAKE_DATABASE: ${{ secrets.SNOWFLAKE_DATABASE }}
           SNOWFLAKE_SCHEMA: ${{ secrets.SNOWFLAKE_SCHEMA }}
