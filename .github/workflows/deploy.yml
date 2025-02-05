@@ -13,7 +13,13 @@ jobs:
         environment: [development, acceptance, production]
     environment:
       name: ${{ matrix.environment }}
-      url: ${{ env.APP_URL }}
+    env:
+      SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+      SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
+      SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD }}
+      SNOWFLAKE_ROLE: ${{ secrets.SNOWFLAKE_ROLE }}
+      SNOWFLAKE_DATABASE: ${{ secrets.SNOWFLAKE_DATABASE }}
+      SNOWFLAKE_SCHEMA: ${{ secrets.SNOWFLAKE_SCHEMA }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -51,12 +57,6 @@ jobs:
       - name: Set Environment Name in Uppercase
         run: echo "ENV_NAME_UPPER=$(echo '${{ matrix.environment }}' | tr '[:lower:]' '[:upper:]')" >> $GITHUB_ENV
 
-      - name: Debug Environment Variables
-        run: |
-          echo "Checking environment variables..."
-          env | grep SNOWFLAKE_
-
-
       - name: Validate Snowflake Secrets
         run: |
           REQUIRED_VARS=(SNOWFLAKE_ACCOUNT SNOWFLAKE_USER SNOWFLAKE_PASSWORD SNOWFLAKE_ROLE SNOWFLAKE_DATABASE SNOWFLAKE_SCHEMA)
@@ -68,15 +68,6 @@ jobs:
           done
 
       - name: Deploy to ${{ matrix.environment }}
-        env:
-          SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
-          SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
-          SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD }}
-          SNOWFLAKE_ROLE: ${{ secrets.SNOWFLAKE_ROLE }}
-          SNOWFLAKE_DATABASE: ${{ secrets.SNOWFLAKE_DATABASE }}
-          SNOWFLAKE_SCHEMA: ${{ secrets.SNOWFLAKE_SCHEMA }}
-          ENVIRONMENT: ${{ matrix.environment }}
-          APP_NAME: ${{ env.APP_NAME }}
         run: |
           ~/snowflake/snowsql -a $SNOWFLAKE_ACCOUNT -u $SNOWFLAKE_USER -p $SNOWFLAKE_PASSWORD -r $SNOWFLAKE_ROLE -d $SNOWFLAKE_DATABASE -s $SNOWFLAKE_SCHEMA -q "CREATE OR REPLACE STREAMLIT APP ${ENVIRONMENT}_${APP_NAME} FROM @app/app.py;"
 
