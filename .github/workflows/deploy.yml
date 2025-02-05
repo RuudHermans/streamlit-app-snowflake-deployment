@@ -67,6 +67,21 @@ jobs:
             fi
           done
 
+      - name: Debug Environment Variables
+        run: |
+          echo "SNOWFLAKE_ACCOUNT=${SNOWFLAKE_ACCOUNT:0:4}***"
+          echo "SNOWFLAKE_USER=${SNOWFLAKE_USER:0:2}***"
+          echo "SNOWFLAKE_ROLE=${SNOWFLAKE_ROLE}"
+          echo "SNOWFLAKE_DATABASE=${SNOWFLAKE_DATABASE}"
+          echo "SNOWFLAKE_SCHEMA=${SNOWFLAKE_SCHEMA}"
+          echo "ENVIRONMENT=${ENVIRONMENT}"
+          echo "APP_NAME=${APP_NAME}"
+
+      - name: Echo the Full SnowSQL Command (Secrets Masked)
+        run: |
+          CMD="~/snowflake/snowsql -a *** -u *** -p *** -r $SNOWFLAKE_ROLE -d $SNOWFLAKE_DATABASE -s $SNOWFLAKE_SCHEMA -q \"CREATE OR REPLACE STREAMLIT APP ${ENVIRONMENT}_${APP_NAME} FROM @app/app.py;\""
+          echo "Running command: $CMD"
+
       - name: Deploy to ${{ matrix.environment }}
         env:
           ENVIRONMENT: ${{ matrix.environment }}
