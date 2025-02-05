@@ -51,8 +51,10 @@ jobs:
           SNOWFLAKE_ROLE: ${{ secrets.SNOWFLAKE_ROLE }}
           SNOWFLAKE_DATABASE: ${{ secrets.SNOWFLAKE_DATABASE }}
           SNOWFLAKE_SCHEMA: ${{ secrets.SNOWFLAKE_SCHEMA }}
+          ENVIRONMENT: ${{ matrix.environment }}   # Pass matrix.environment as ENVIRONMENT
+          APP_NAME: ${{ env.APP_NAME }}             # Ensure APP_NAME is set correctly
         run: |
-          snowsql -a $SNOWFLAKE_ACCOUNT -u $SNOWFLAKE_USER -p $SNOWFLAKE_PASSWORD -r $SNOWFLAKE_ROLE -d $SNOWFLAKE_DATABASE -s $SNOWFLAKE_SCHEMA -q "CREATE OR REPLACE STREAMLIT APP ${matrix.environment}_${APP_NAME} FROM @app/app.py;"
+          snowsql -a $SNOWFLAKE_ACCOUNT -u $SNOWFLAKE_USER -p $SNOWFLAKE_PASSWORD -r $SNOWFLAKE_ROLE -d $SNOWFLAKE_DATABASE -s $SNOWFLAKE_SCHEMA -q "CREATE OR REPLACE STREAMLIT APP ${ENVIRONMENT}_${APP_NAME} FROM @app/app.py;"
 
       - name: Output Deployment URL
         run: |
