@@ -31,3 +31,5 @@ st.write("Here are the latest customers:")
 
 # Display data
 st.dataframe(data2)
+
+st.write("Thanks all!")
