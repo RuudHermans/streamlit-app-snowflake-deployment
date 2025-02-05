@@ -20,6 +20,7 @@ jobs:
       SNOWFLAKE_ROLE: ${{ secrets.SNOWFLAKE_ROLE }}
       SNOWFLAKE_DATABASE: ${{ secrets.SNOWFLAKE_DATABASE }}
       SNOWFLAKE_SCHEMA: ${{ secrets.SNOWFLAKE_SCHEMA }}
+      ENVIRONMENT: ${{ matrix.environment }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
