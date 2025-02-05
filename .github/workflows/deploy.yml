@@ -20,6 +20,8 @@ jobs:
       SNOWFLAKE_ROLE: ${{ secrets.SNOWFLAKE_ROLE }}
       SNOWFLAKE_DATABASE: ${{ secrets.SNOWFLAKE_DATABASE }}
       SNOWFLAKE_SCHEMA: ${{ secrets.SNOWFLAKE_SCHEMA }}
+      SNOWFLAKE_WAREHOUSE: ${{ secrets.SNOWFLAKE_WAREHOUSE }}
+      STAGE: ${{ secrets.STAGE }}
       ENVIRONMENT: ${{ matrix.environment }}
     steps:
       - name: Checkout code
@@ -60,17 +62,17 @@ jobs:
 
       - name: Upload .py file to ${{ matrix.environment }} stage
         run: |
-          ~/snowflake/snowsql -a $SNOWFLAKE_ACCOUNT -u $SNOWFLAKE_USER -r $SNOWFLAKE_ROLE -d $SNOWFLAKE_DATABASE -s $SNOWFLAKE_SCHEMA -q "PUT file://app/app.py @$SNOWFLAKE_DATABASE.$SNOWFLAKE_SCHEMA.streamlit_stage overwrite=true auto_compress=false;"
+          ~/snowflake/snowsql -a $SNOWFLAKE_ACCOUNT -u $SNOWFLAKE_USER -r $SNOWFLAKE_ROLE -d $SNOWFLAKE_DATABASE -s $SNOWFLAKE_SCHEMA -q "PUT file://app/app.py @$SNOWFLAKE_DATABASE.$SNOWFLAKE_SCHEMA.$STAGE overwrite=true auto_compress=false;"
 
       - name: Upload .yml file to ${{ matrix.environment }} stage
         run: |
-          ~/snowflake/snowsql -a $SNOWFLAKE_ACCOUNT -u $SNOWFLAKE_USER -r $SNOWFLAKE_ROLE -d $SNOWFLAKE_DATABASE -s $SNOWFLAKE_SCHEMA -q "PUT file://app/environment.yml @$SNOWFLAKE_DATABASE.$SNOWFLAKE_SCHEMA.streamlit_stage overwrite=true auto_compress=false;"
+          ~/snowflake/snowsql -a $SNOWFLAKE_ACCOUNT -u $SNOWFLAKE_USER -r $SNOWFLAKE_ROLE -d $SNOWFLAKE_DATABASE -s $SNOWFLAKE_SCHEMA -q "PUT file://app/environment.yml @$SNOWFLAKE_DATABASE.$SNOWFLAKE_SCHEMA.$STAGE overwrite=true auto_compress=false;"
 
       - name: Create ${{ matrix.environment }} application
         env:
           ENVIRONMENT: ${{ matrix.environment }}
         run: |
-          ~/snowflake/snowsql -a $SNOWFLAKE_ACCOUNT -u $SNOWFLAKE_USER -r $SNOWFLAKE_ROLE -d $SNOWFLAKE_DATABASE -s $SNOWFLAKE_SCHEMA -q "CREATE OR REPLACE STREAMLIT ${ENVIRONMENT}_${APP_NAME} ROOT_LOCATION = '@$SNOWFLAKE_DATABASE.$SNOWFLAKE_SCHEMA.streamlit_stage' MAIN_FILE = '/app.py' QUERY_WAREHOUSE = dev_wh;"
+          ~/snowflake/snowsql -a $SNOWFLAKE_ACCOUNT -u $SNOWFLAKE_USER -r $SNOWFLAKE_ROLE -d $SNOWFLAKE_DATABASE -s $SNOWFLAKE_SCHEMA -q "CREATE OR REPLACE STREAMLIT ${ENVIRONMENT}_${APP_NAME} ROOT_LOCATION = '@$SNOWFLAKE_DATABASE.$SNOWFLAKE_SCHEMA.$STAGE' MAIN_FILE = '/app.py' QUERY_WAREHOUSE = $SNOWFLAKE_WAREHOUSE;"
 
       - name: Output Deployment URL
         run: |
