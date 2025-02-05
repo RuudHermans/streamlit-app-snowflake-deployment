@@ -23,9 +23,23 @@ jobs:
         with:
           python-version: '3.9'
 
-      - name: Install Snowflake CLI
+      - name: Install SnowSQL
         run: |
-          pip install snowflake-cli pyyaml
+          sudo apt-get update
+          sudo apt-get install -y gnupg2 curl
+
+          # Add Snowflake's GPG key securely
+          curl -fsSL https://sfc-repo.snowflakecomputing.com/keys/snowflake-apt-key.pub | sudo tee /usr/share/keyrings/snowflake-archive-keyring.gpg > /dev/null
+
+          # Add Snowflake's APT repository
+          echo "deb [signed-by=/usr/share/keyrings/snowflake-archive-keyring.gpg] https://sfc-repo.snowflakecomputing.com/apt/debian/ stable main" | sudo tee /etc/apt/sources.list.d/snowflake.list
+
+          # Update repositories and install SnowSQL
+          sudo apt-get update
+          sudo apt-get install -y snowsql
+
+          # Verify the installation
+          snowsql --version
 
       - name: Read App Name from snowflake_app.yml
         id: app_name
@@ -42,24 +56,6 @@ jobs:
 
       - name: Set Environment Name in Uppercase
         run: echo "ENV_NAME_UPPER=$(echo '${{ matrix.environment }}' | tr '[:lower:]' '[:upper:]')" >> $GITHUB_ENV
-      
-      - name: Install SnowSQL
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y gnupg2 curl
-      
-          # Add Snowflake's GPG key securely
-          curl -fsSL https://sfc-repo.snowflakecomputing.com/keys/snowflake-apt-key.pub | sudo tee /usr/share/keyrings/snowflake-archive-keyring.gpg > /dev/null
-      
-          # Add Snowflake's APT repository
-          echo "deb [signed-by=/usr/share/keyrings/snowflake-archive-keyring.gpg] https://sfc-repo.snowflakecomputing.com/apt/debian/ stable main" | sudo tee /etc/apt/sources.list.d/snowflake.list
-      
-          # Update repositories and install SnowSQL
-          sudo apt-get update
-          sudo apt-get install -y snowsql
-      
-          # Verify the installation
-          snowsql --version
 
       - name: Deploy to ${{ matrix.environment }}
         env:
@@ -73,7 +69,6 @@ jobs:
           APP_NAME: ${{ env.APP_NAME }}
         run: |
           snowsql -a $SNOWFLAKE_ACCOUNT -u $SNOWFLAKE_USER -p $SNOWFLAKE_PASSWORD -r $SNOWFLAKE_ROLE -d $SNOWFLAKE_DATABASE -s $SNOWFLAKE_SCHEMA -q "CREATE OR REPLACE STREAMLIT APP ${ENVIRONMENT}_${APP_NAME} FROM @app/app.py;"
-
 
       - name: Output Deployment URL
         run: |
