@@ -26,19 +26,17 @@ jobs:
       - name: Install SnowSQL
         run: |
           sudo apt-get update
-          sudo apt-get install -y gnupg2 curl
-
-          # Add Snowflake's GPG key securely
-          curl -fsSL https://sfc-repo.snowflakecomputing.com/keys/snowflake-apt-key.pub | sudo tee /usr/share/keyrings/snowflake-archive-keyring.gpg > /dev/null
-
-          # Add Snowflake's APT repository
-          echo "deb [signed-by=/usr/share/keyrings/snowflake-archive-keyring.gpg] https://sfc-repo.snowflakecomputing.com/apt/debian/ stable main" | sudo tee /etc/apt/sources.list.d/snowflake.list
-
-          # Update repositories and install SnowSQL
-          sudo apt-get update
-          sudo apt-get install -y snowsql
-
-          # Verify the installation
+          sudo apt-get install -y curl unzip
+      
+          # Download and install SnowSQL
+          curl -O https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.2/linux_x86_64/snowsql-linux_x86_64.zip
+          unzip snowsql-linux_x86_64.zip
+          sudo ./snowsql-linux_x86_64/install
+      
+          # Add SnowSQL to PATH
+          export PATH=/usr/bin:$PATH
+      
+          # Verify installation
           snowsql --version
 
       - name: Read App Name from snowflake_app.yml
