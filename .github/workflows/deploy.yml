@@ -23,13 +23,17 @@ jobs:
         with:
           python-version: '3.9'
 
+      - name: Install PyYAML
+        run: pip install pyyaml
+
       - name: Download SnowSQL
         run:  curl -O https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.2/linux_x86_64/snowsql-1.2.9-linux_x86_64.bash
+
       - name: Install SnowSQL
         run: SNOWSQL_DEST=~/snowflake SNOWSQL_LOGIN_SHELL=~/.profile bash snowsql-1.2.9-linux_x86_64.bash
+
       - name: Test installation
         run:  ~/snowflake/snowsql -v
-
 
       - name: Read App Name from snowflake_app.yml
         id: app_name
@@ -58,7 +62,7 @@ jobs:
           ENVIRONMENT: ${{ matrix.environment }}
           APP_NAME: ${{ env.APP_NAME }}
         run: |
-          snowsql -a $SNOWFLAKE_ACCOUNT -u $SNOWFLAKE_USER -p $SNOWFLAKE_PASSWORD -r $SNOWFLAKE_ROLE -d $SNOWFLAKE_DATABASE -s $SNOWFLAKE_SCHEMA -q "CREATE OR REPLACE STREAMLIT APP ${ENVIRONMENT}_${APP_NAME} FROM @app/app.py;"
+          ~/snowflake/snowsql -a $SNOWFLAKE_ACCOUNT -u $SNOWFLAKE_USER -p $SNOWFLAKE_PASSWORD -r $SNOWFLAKE_ROLE -d $SNOWFLAKE_DATABASE -s $SNOWFLAKE_SCHEMA -q "CREATE OR REPLACE STREAMLIT APP ${ENVIRONMENT}_${APP_NAME} FROM @app/app.py;"
 
       - name: Output Deployment URL
         run: |
