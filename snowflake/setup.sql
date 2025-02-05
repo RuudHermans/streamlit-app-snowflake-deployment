@@ -1,49 +1,128 @@
--- Snowflake Script to Create Service Accounts with Basic Authentication
+-- Snowflake Setup Script
 
--- Use the SECURITYADMIN role to manage roles and users
+-- Step 1: Use SECURITYADMIN for Role and User Management
 USE ROLE SECURITYADMIN;
 
--- 1. Create Service Roles for Each Environment
-CREATE ROLE IF NOT EXISTS deploy_dev_role;
-CREATE ROLE IF NOT EXISTS deploy_acc_role;
-CREATE ROLE IF NOT EXISTS deploy_prod_role;
+-- Create Custom Roles for Each Environment
+CREATE OR REPLACE ROLE dev_read_role;
+CREATE OR REPLACE ROLE acc_read_role;
+CREATE OR REPLACE ROLE prod_read_role;
 
--- 2. Create Service Users for Each Environment with Basic Authentication
-CREATE USER IF NOT EXISTS deploy_dev_user PASSWORD='CHANGE-TO-SOMETHING-SAFE' DEFAULT_ROLE = deploy_dev_role MUST_CHANGE_PASSWORD = FALSE;
-CREATE USER IF NOT EXISTS deploy_acc_user PASSWORD='CHANGE-TO-SOMETHING-SAFE' DEFAULT_ROLE = deploy_acc_role MUST_CHANGE_PASSWORD = FALSE;
-CREATE USER IF NOT EXISTS deploy_prod_user PASSWORD='CHANGE-TO-SOMETHING-SAFE' DEFAULT_ROLE = deploy_prod_role MUST_CHANGE_PASSWORD = FALSE;
+-- Create Service Users for Each Environment
+CREATE OR REPLACE USER deploy_dev_user PASSWORD = 'StrongPassword1!' DEFAULT_ROLE = dev_read_role TYPE = 'LEGACY_SERVICE' MUST_CHANGE_PASSWORD = FALSE;
+CREATE OR REPLACE USER deploy_acc_user PASSWORD = 'StrongPassword2!' DEFAULT_ROLE = acc_read_role TYPE = 'LEGACY_SERVICE' MUST_CHANGE_PASSWORD = FALSE;
+CREATE OR REPLACE USER deploy_prod_user PASSWORD = 'StrongPassword3!' DEFAULT_ROLE = prod_read_role TYPE = 'LEGACY_SERVICE' MUST_CHANGE_PASSWORD = FALSE;
 
--- 3. Grant Roles to Service Users
-GRANT ROLE deploy_dev_role TO USER deploy_dev_user;
-GRANT ROLE deploy_acc_role TO USER deploy_acc_user;
-GRANT ROLE deploy_prod_role TO USER deploy_prod_user;
+-- Assign Roles to Service Users
+GRANT ROLE dev_read_role TO USER deploy_dev_user;
+GRANT ROLE acc_read_role TO USER deploy_acc_user;
+GRANT ROLE prod_read_role TO USER deploy_prod_user;
 
--- 4. Grant Required Permissions for Each Environment
+-- Step 2: Switch to SYSADMIN for Database, Warehouse, and Object Creation
+USE ROLE SYSADMIN;
 
--- Development Environment
-GRANT USAGE ON DATABASE dev_database TO ROLE deploy_dev_role;
-GRANT USAGE ON SCHEMA dev_database.dev_schema TO ROLE deploy_dev_role;
-GRANT CREATE STREAMLIT ON SCHEMA dev_database.dev_schema TO ROLE deploy_dev_role;
-GRANT MODIFY ON SCHEMA dev_database.dev_schema TO ROLE deploy_dev_role;
+-- Create Warehouses for Each Environment
+CREATE OR REPLACE WAREHOUSE dev_wh WITH 
+    WAREHOUSE_SIZE = 'XSMALL' 
+    AUTO_SUSPEND = 300 
+    AUTO_RESUME = TRUE;
 
--- Acceptance Environment
-GRANT USAGE ON DATABASE acc_database TO ROLE deploy_acc_role;
-GRANT USAGE ON SCHEMA acc_database.acc_schema TO ROLE deploy_acc_role;
-GRANT CREATE STREAMLIT ON SCHEMA acc_database.acc_schema TO ROLE deploy_acc_role;
-GRANT MODIFY ON SCHEMA acc_database.acc_schema TO ROLE deploy_acc_role;
+CREATE OR REPLACE WAREHOUSE acc_wh WITH 
+    WAREHOUSE_SIZE = 'XSMALL' 
+    AUTO_SUSPEND = 300 
+    AUTO_RESUME = TRUE;
 
--- Production Environment
-GRANT USAGE ON DATABASE prod_database TO ROLE deploy_prod_role;
-GRANT USAGE ON SCHEMA prod_database.prod_schema TO ROLE deploy_prod_role;
-GRANT CREATE STREAMLIT ON SCHEMA prod_database.prod_schema TO ROLE deploy_prod_role;
-GRANT MODIFY ON SCHEMA prod_database.prod_schema TO ROLE deploy_prod_role;
+CREATE OR REPLACE WAREHOUSE prod_wh WITH 
+    WAREHOUSE_SIZE = 'XSMALL' 
+    AUTO_SUSPEND = 300 
+    AUTO_RESUME = TRUE;
 
--- Optional: Grant Monitor Privileges for Debugging (if needed)
-GRANT MONITOR ON ACCOUNT TO ROLE deploy_dev_role;
-GRANT MONITOR ON ACCOUNT TO ROLE deploy_acc_role;
-GRANT MONITOR ON ACCOUNT TO ROLE deploy_prod_role;
+-- Create SYSADMIN Warehouse
+CREATE OR REPLACE WAREHOUSE sysadmin_wh WITH 
+    WAREHOUSE_SIZE = 'XSMALL' 
+    AUTO_SUSPEND = 300 
+    AUTO_RESUME = TRUE;
 
--- 5. Grant the Roles to the Appropriate Admin or Management Role
-GRANT ROLE deploy_dev_role TO ROLE SYSADMIN;
-GRANT ROLE deploy_acc_role TO ROLE SYSADMIN;
-GRANT ROLE deploy_prod_role TO ROLE SYSADMIN;
+-- Grant Usage Privileges on Warehouses to Corresponding Roles
+GRANT USAGE ON WAREHOUSE dev_wh TO ROLE dev_read_role;
+GRANT USAGE ON WAREHOUSE acc_wh TO ROLE acc_read_role;
+GRANT USAGE ON WAREHOUSE prod_wh TO ROLE prod_read_role;
+
+-- Use the SYSADMIN Warehouse for Initial Setup
+USE WAREHOUSE sysadmin_wh;
+
+-- Create Databases and Schemas for All Environments
+CREATE OR REPLACE DATABASE dev_database;
+CREATE OR REPLACE SCHEMA dev_database.dev_schema;
+
+CREATE OR REPLACE DATABASE acc_database;
+CREATE OR REPLACE SCHEMA acc_database.acc_schema;
+
+CREATE OR REPLACE DATABASE prod_database;
+CREATE OR REPLACE SCHEMA prod_database.prod_schema;
+
+-- Create the 'orders' Table for Each Environment
+CREATE OR REPLACE TABLE dev_database.dev_schema.orders (
+    order_number STRING,
+    order_name STRING
+);
+
+CREATE OR REPLACE TABLE acc_database.acc_schema.orders (
+    order_number STRING,
+    order_name STRING
+);
+
+CREATE OR REPLACE TABLE prod_database.prod_schema.orders (
+    order_number STRING,
+    order_name STRING
+);
+
+-- Insert Sample Data into the 'orders' Table for All Environments
+INSERT INTO dev_database.dev_schema.orders (order_number, order_name) VALUES
+    ('001', 'Order Alpha'),
+    ('002', 'Order Beta'),
+    ('003', 'Order Gamma'),
+    ('004', 'Order Delta'),
+    ('005', 'Order Epsilon');
+
+INSERT INTO acc_database.acc_schema.orders (order_number, order_name) VALUES
+    ('001', 'Order Alpha'),
+    ('002', 'Order Beta'),
+    ('003', 'Order Gamma'),
+    ('004', 'Order Delta'),
+    ('005', 'Order Epsilon');
+
+INSERT INTO prod_database.prod_schema.orders (order_number, order_name) VALUES
+    ('001', 'Order Alpha'),
+    ('002', 'Order Beta'),
+    ('003', 'Order Gamma'),
+    ('004', 'Order Delta'),
+    ('005', 'Order Epsilon');
+
+-- Grant Read-Only Privileges to Custom Roles
+GRANT USAGE ON DATABASE dev_database TO ROLE dev_read_role;
+GRANT USAGE ON SCHEMA dev_database.dev_schema TO ROLE dev_read_role;
+GRANT SELECT ON dev_database.dev_schema.orders TO ROLE dev_read_role;
+
+GRANT USAGE ON DATABASE acc_database TO ROLE acc_read_role;
+GRANT USAGE ON SCHEMA acc_database.acc_schema TO ROLE acc_read_role;
+GRANT SELECT ON acc_database.acc_schema.orders TO ROLE acc_read_role;
+
+GRANT USAGE ON DATABASE prod_database TO ROLE prod_read_role;
+GRANT USAGE ON SCHEMA prod_database.prod_schema TO ROLE prod_read_role;
+GRANT SELECT ON prod_database.prod_schema.orders TO ROLE prod_read_role;
+
+-- Switch Back to SECURITYADMIN to Set Default Warehouse for Each Service User
+USE ROLE SECURITYADMIN;
+
+-- Set Default Warehouse for Each Service User
+-- Note: We set the default warehouse for each service account instead of specifying it in snowflake_app.yml.
+-- This approach ensures environment-specific isolation and avoids the need for multiple configuration files.
+ALTER USER deploy_dev_user SET DEFAULT_WAREHOUSE = dev_wh;
+ALTER USER deploy_acc_user SET DEFAULT_WAREHOUSE = acc_wh;
+ALTER USER deploy_prod_user SET DEFAULT_WAREHOUSE = prod_wh;
+
+-- Confirm Setup
+SHOW TABLES IN SCHEMA dev_database.dev_schema;
+SHOW TABLES IN SCHEMA acc_database.acc_schema;
+SHOW TABLES IN SCHEMA prod_database.prod_schema;
