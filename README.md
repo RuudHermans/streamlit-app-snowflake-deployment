@@ -97,8 +97,9 @@ This repository contains a simple Streamlit application deployed on **Snowflake*
    | `SNOWFLAKE_ROLE`              | Role for deployment (e.g., `SYSADMIN`) |
    | `SNOWFLAKE_USER`              | Username for the environment           |
    | `SNOWFLAKE_PASSWORD`          | Password for the environment user      |
+   | `SNOWFLAKE_WAREHOUSE`         | Warehouse for the environment user     |
 
-3. **Protect Environments:**
+4. **Protect Environments:**
    - Enable **manual approval** for `acceptance` and `production` deployments.
 
 ---
