@@ -70,7 +70,7 @@ jobs:
         env:
           ENVIRONMENT: ${{ matrix.environment }}
         run: |
-          ~/snowflake/snowsql -a $SNOWFLAKE_ACCOUNT -u $SNOWFLAKE_USER -r $SNOWFLAKE_ROLE -d $SNOWFLAKE_DATABASE -s $SNOWFLAKE_SCHEMA -q "CREATE STREAMLIT ${ENVIRONMENT}_${APP_NAME} ROOT_LOCATION = '@$SNOWFLAKE_DATABASE.$SNOWFLAKE_SCHEMA.streamlit_stage' MAIN_FILE = '/app.py' QUERY_WAREHOUSE = dev_wh;"
+          ~/snowflake/snowsql -a $SNOWFLAKE_ACCOUNT -u $SNOWFLAKE_USER -r $SNOWFLAKE_ROLE -d $SNOWFLAKE_DATABASE -s $SNOWFLAKE_SCHEMA -q "CREATE OR REPLACE STREAMLIT ${ENVIRONMENT}_${APP_NAME} ROOT_LOCATION = '@$SNOWFLAKE_DATABASE.$SNOWFLAKE_SCHEMA.streamlit_stage' MAIN_FILE = '/app.py' QUERY_WAREHOUSE = dev_wh;"
 
       - name: Output Deployment URL
         run: |
