@@ -58,14 +58,9 @@ jobs:
       - name: Set Environment Name in Uppercase
         run: echo "ENV_NAME_UPPER=$(echo '${{ matrix.environment }}' | tr '[:lower:]' '[:upper:]')" >> $GITHUB_ENV
 
-      - name: Validate Snowflake Secrets
+      - name: Upload .py file to ${{ matrix.environment }} stage
         run: |
-          REQUIRED_VARS=(SNOWFLAKE_ACCOUNT SNOWFLAKE_USER SNOWFLAKE_PASSWORD SNOWFLAKE_ROLE SNOWFLAKE_DATABASE SNOWFLAKE_SCHEMA ENVIRONMENT APP_NAME)
-          for VAR in "${REQUIRED_VARS[@]}"; do
-            if [ -z "${!VAR}" ]; then
-              echo "❌ Error: Required environment variable '$VAR' is missing!"
-            fi
-          done
+          ~/snowflake/snowsql -a $SNOWFLAKE_ACCOUNT -u $SNOWFLAKE_USER -r $SNOWFLAKE_ROLE -d $SNOWFLAKE_DATABASE -s $SNOWFLAKE_SCHEMA -q "PUT file:///app/app.py @$SNOWFLAKE_DATABASE.SNOWFLAKE_SCHEMA.streamlit_stage overwrite=true auto_compress=false;"
 
       - name: Deploy to ${{ matrix.environment }}
         env:
