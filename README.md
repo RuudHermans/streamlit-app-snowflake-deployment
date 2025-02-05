@@ -232,6 +232,75 @@ Instead of defining the warehouse in the `snowflake_app.yml` file, we chose to:
 
 ---
 
+## 🚀 Developing a New Feature Using Feature Branches
+
+Follow these steps to develop a new feature efficiently:
+
+### 1️⃣ Create a New Feature Branch
+
+Start by creating a new branch based on the `main` branch:
+
+```bash
+git checkout -b feature/new-feature-name
+```
+
+### 2️⃣ Add Mock Data (if Needed)
+
+If your new feature relies on additional data:
+
+- Place mock data files in the `mock_data/` directory.
+- Ensure the data structure matches what the app expects.
+
+### 3️⃣ Develop Locally
+
+Run the app with mock data to test changes in isolation:
+
+```bash
+./run_mock.sh
+```
+
+*(Note: `USE_MOCK_DATA=true` is set by default in `run_mock.sh`, so no manual switching is needed.)*
+
+#### 🔍 Test with Real Snowflake Data (Optional)
+
+If you want to validate your feature with real Snowflake data:
+
+- When the app is deployed to Snowflake, it will automatically connect to real Snowflake data because `USE_MOCK_DATA` is not set, and it defaults to `false`.
+- *(No manual switching required for deployments.)*
+
+### 4️⃣ Commit and Push Changes
+
+After completing development and local testing:
+
+```bash
+git add .
+git commit -m "Add new feature: [feature description]"
+git push origin feature/new-feature-name
+```
+
+### 5️⃣ Create a Pull Request (PR)
+
+- Go to your GitHub repository.
+- Click **"Compare & Pull Request"**.
+- Provide a clear description of your feature and related changes.
+
+### 6️⃣ Code Review and Merge
+
+- Submit the PR for review.
+- Address feedback if needed.
+- Once approved, merge the PR into the `main` branch.
+
+### 7️⃣ Deploy to Environments
+
+- GitHub Actions will automatically deploy to the **development** environment.
+- For **acceptance** and **production**, trigger manual approvals in GitHub Actions.
+
+---
+
+This workflow ensures safe, tested deployments across environments while maintaining code quality through peer reviews. 🚀
+
+---
+
 ## 🔄 Special Work Instructions: Updating the Streamlit Version
 
 1. **Update `requirements.txt`:**
