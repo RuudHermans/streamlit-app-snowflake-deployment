@@ -43,6 +43,15 @@ jobs:
       - name: Set Environment Name in Uppercase
         run: echo "ENV_NAME_UPPER=$(echo '${{ matrix.environment }}' | tr '[:lower:]' '[:upper:]')" >> $GITHUB_ENV
       
+      - name: Install SnowSQL
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y curl gnupg2
+          curl -O https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.2/linux_x86_64/snowsql-1.2.24-linux_x86_64.bash
+          bash snowsql-1.2.24-linux_x86_64.bash
+          export PATH=$PATH:/usr/bin
+          snowsql --version
+      
       - name: Deploy to ${{ matrix.environment }}
         env:
           SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
@@ -51,10 +60,11 @@ jobs:
           SNOWFLAKE_ROLE: ${{ secrets.SNOWFLAKE_ROLE }}
           SNOWFLAKE_DATABASE: ${{ secrets.SNOWFLAKE_DATABASE }}
           SNOWFLAKE_SCHEMA: ${{ secrets.SNOWFLAKE_SCHEMA }}
-          ENVIRONMENT: ${{ matrix.environment }}   # Pass matrix.environment as ENVIRONMENT
-          APP_NAME: ${{ env.APP_NAME }}             # Ensure APP_NAME is set correctly
+          ENVIRONMENT: ${{ matrix.environment }}
+          APP_NAME: ${{ env.APP_NAME }}
         run: |
           snowsql -a $SNOWFLAKE_ACCOUNT -u $SNOWFLAKE_USER -p $SNOWFLAKE_PASSWORD -r $SNOWFLAKE_ROLE -d $SNOWFLAKE_DATABASE -s $SNOWFLAKE_SCHEMA -q "CREATE OR REPLACE STREAMLIT APP ${ENVIRONMENT}_${APP_NAME} FROM @app/app.py;"
+
 
       - name: Output Deployment URL
         run: |
