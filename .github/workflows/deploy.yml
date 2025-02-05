@@ -25,26 +25,23 @@ jobs:
 
       - name: Install SnowSQL
         run: |
+          # Install dependencies
           sudo apt-get update
-          sudo apt-get install -y curl
+          sudo apt-get install -y gnupg2 curl lsb-release
       
-          # Download the SnowSQL installer script
-          curl -O https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.2/linux_x86_64/snowsql-linux_x86_64.bash
+          # Add Snowflake's GPG key
+          curl https://sfc-repo.snowflakecomputing.com/keys/snowflake-apt-key.pub | sudo gpg --dearmor -o /usr/share/keyrings/snowflake-archive-keyring.gpg
       
-          # Verify the installer script is downloaded
-          if [ ! -f snowsql-linux_x86_64.bash ]; then
-            echo "Error: SnowSQL installer script not found."
-            exit 1
-          fi
+          # Add Snowflake APT repository (use 'bookworm' for compatibility with Ubuntu 24.04)
+          echo "deb [signed-by=/usr/share/keyrings/snowflake-archive-keyring.gpg] https://sfc-repo.snowflakecomputing.com/apt/debian bookworm main" | sudo tee /etc/apt/sources.list.d/snowflake.list
       
-          # Make the installer script executable
-          chmod +x snowsql-linux_x86_64.bash
+          # Install SnowSQL
+          sudo apt-get update
+          sudo apt-get install -y snowsql
       
-          # Run the installer script
-          ./snowsql-linux_x86_64.bash -y
-      
-          # Verify the installation
-          /usr/bin/snowsql --version
+          # Verify installation
+          snowsql --version
+
 
       - name: Read App Name from snowflake_app.yml
         id: app_name
