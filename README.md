@@ -98,6 +98,7 @@ This repository contains a simple Streamlit application deployed on **Snowflake*
    | `SNOWFLAKE_USER`              | Username for the environment           |
    | `SNOWFLAKE_PASSWORD`          | Password for the environment user      |
    | `SNOWFLAKE_WAREHOUSE`         | Warehouse for the environment user     |
+   | `STAGE`                       | The internal stage for this app        |
 
 4. **Protect Environments:**
    - Enable **manual approval** for `acceptance` and `production` deployments.
