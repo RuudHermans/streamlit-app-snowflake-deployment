@@ -45,7 +45,7 @@ jobs:
       - name: Read App Name from snowflake_app.yml
         id: app_name
         run: |
-          APP_NAME=$(python -c "import yaml; print(yaml.safe_load(open('app/environment.yml'))['app_name'])")
+          APP_NAME=$(python -c "import yaml; print(yaml.safe_load(open('app/environment.yml'))['name'])")
           echo "APP_NAME=$APP_NAME" >> $GITHUB_ENV
 
       - name: Build Snowflake App URL
