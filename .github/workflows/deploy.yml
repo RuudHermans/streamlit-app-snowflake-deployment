@@ -46,11 +46,13 @@ jobs:
       - name: Install SnowSQL
         run: |
           sudo apt-get update
-          sudo apt-get install -y curl gnupg2
-          curl -O https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.2/linux_x86_64/snowsql-1.2.24-linux_x86_64.bash
-          bash snowsql-1.2.24-linux_x86_64.bash
-          export PATH=$PATH:/usr/bin
+          sudo apt-get install -y gnupg2 curl
+          curl https://sfc-repo.snowflakecomputing.com/keys/snowflake-apt-key.pub | sudo gpg --dearmor -o /usr/share/keyrings/snowflake-archive-keyring.gpg
+          echo "deb [signed-by=/usr/share/keyrings/snowflake-archive-keyring.gpg] https://sfc-repo.snowflakecomputing.com/apt/debian/ stable main" | sudo tee /etc/apt/sources.list.d/snowflake.list
+          sudo apt-get update
+          sudo apt-get install -y snowsql
           snowsql --version
+
       
       - name: Deploy to ${{ matrix.environment }}
         env:
