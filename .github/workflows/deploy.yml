@@ -60,7 +60,7 @@ jobs:
 
       - name: Upload .py file to ${{ matrix.environment }} stage
         run: |
-          ~/snowflake/snowsql -a $SNOWFLAKE_ACCOUNT -u $SNOWFLAKE_USER -r $SNOWFLAKE_ROLE -d $SNOWFLAKE_DATABASE -s $SNOWFLAKE_SCHEMA -q "PUT file:///app/app.py @$SNOWFLAKE_DATABASE.SNOWFLAKE_SCHEMA.streamlit_stage overwrite=true auto_compress=false;"
+          ~/snowflake/snowsql -a $SNOWFLAKE_ACCOUNT -u $SNOWFLAKE_USER -r $SNOWFLAKE_ROLE -d $SNOWFLAKE_DATABASE -s $SNOWFLAKE_SCHEMA -q "PUT file:///app/app.py @$SNOWFLAKE_DATABASE.$SNOWFLAKE_SCHEMA.streamlit_stage overwrite=true auto_compress=false;"
 
       - name: Deploy to ${{ matrix.environment }}
         env:
