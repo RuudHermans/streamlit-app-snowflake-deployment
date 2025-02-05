@@ -9,7 +9,7 @@ USE_MOCK_DATA = os.getenv("USE_MOCK_DATA", "false").lower() == "true"
 # Load data
 if USE_MOCK_DATA:
     # Load mock data from CSV
-    data = pd.read_csv("mock_data/orders.csv")
+    data = pd.read_csv(os.path.join(os.getcwd(), "mock_data", "mock_data_orders.csv"))
 else:
     # Use Streamlit's Snowflake connection
     cnx = st.connection("snowflake")
