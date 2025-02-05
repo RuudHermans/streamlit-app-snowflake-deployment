@@ -1,26 +1,21 @@
-# Base image
+# Dockerfile for Streamlit Application Development
+
+# Use an official Python runtime as the base image
 FROM python:3.9-slim
 
+# Set the working directory in the container
+WORKDIR /app
+
+# Copy the application files into the container
+COPY app/ ./app
+COPY mock_data/ ./mock_data
+COPY run_mock.sh ./run_mock.sh
+
 # Install dependencies
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-    build-essential \
-    curl \
-    git \
-    && rm -rf /var/lib/apt/lists/*
+RUN pip install --no-cache-dir -r app/requirements.txt
 
-# Install Snowflake CLI
-RUN pip install --upgrade pip \
-    && pip install snowflake-cli streamlit PyYAML
+# Grant execute permission to run_mock.sh
+RUN chmod +x /app/run_mock.sh
 
-# Set working directory
-WORKDIR /workspace
-
-# Copy project files
-COPY . /workspace
-
-# Expose Streamlit port
-EXPOSE 8501
-
-# Default command
-CMD ["streamlit", "run", "app/app.py"]
+# Default command to run the app
+CMD ["./run_mock.sh"]
