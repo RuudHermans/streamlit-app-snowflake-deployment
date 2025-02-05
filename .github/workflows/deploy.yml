@@ -36,6 +36,12 @@ jobs:
       - name: TEMP
         run: ls
 
+      - name: TEMP2
+        run: cd app
+        
+      - name: TEMP3
+        run: ls
+
       - name: Download SnowSQL
         run:  curl -O https://sfc-repo.snowflakecomputing.com/snowsql/bootstrap/1.3/linux_x86_64/snowsql-1.3.2-linux_x86_64.bash
 
@@ -63,7 +69,7 @@ jobs:
 
       - name: Upload .py file to ${{ matrix.environment }} stage
         run: |
-          ~/snowflake/snowsql -a $SNOWFLAKE_ACCOUNT -u $SNOWFLAKE_USER -r $SNOWFLAKE_ROLE -d $SNOWFLAKE_DATABASE -s $SNOWFLAKE_SCHEMA -q "PUT file:///app/app.py @$SNOWFLAKE_DATABASE.$SNOWFLAKE_SCHEMA.streamlit_stage overwrite=true auto_compress=false;"
+          ~/snowflake/snowsql -a $SNOWFLAKE_ACCOUNT -u $SNOWFLAKE_USER -r $SNOWFLAKE_ROLE -d $SNOWFLAKE_DATABASE -s $SNOWFLAKE_SCHEMA -q "PUT file://app/app.py @$SNOWFLAKE_DATABASE.$SNOWFLAKE_SCHEMA.streamlit_stage overwrite=true auto_compress=false;"
 
       - name: Deploy to ${{ matrix.environment }}
         env:
