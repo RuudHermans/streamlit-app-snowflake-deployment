@@ -76,6 +76,10 @@ CREATE OR REPLACE STAGE prod_database.prod_schema.streamlit_stage;
 GRANT READ ON STAGE prod_database.prod_schema.streamlit_stage TO ROLE prod_read_role;
 GRANT WRITE ON STAGE prod_database.prod_schema.streamlit_stage TO ROLE prod_read_role;
 
+GRANT CREATE STREAMLIT ON SCHEMA dev_database.dev_schema TO ROLE dev_read_role;
+GRANT CREATE STREAMLIT ON SCHEMA acc_database.acc_schema TO ROLE acc_read_role;
+GRANT CREATE STREAMLIT ON SCHEMA prod_database.prod_schema TO ROLE prod_read_role;
+
 -- Create the 'orders' Table for Each Environment
 CREATE OR REPLACE TABLE dev_database.dev_schema.orders (
     order_number STRING,
